@@ -43,10 +43,14 @@ def encode_texts(tokenizer: AutoTokenizer, model: AutoModel, texts: list[str]) -
 
 def demo():
     script_dir = Path(__file__).resolve().parent
-
-    # Name this folder to match the model you copy in.
-    # For example, copy your local 'java_embedder_stage2_merged' folder here.
     model_dir = script_dir / "java_embedder_stage2_merged"
+
+    # If model is stored as chunks (no LFS), reassemble once.
+    model_file = model_dir / "model.safetensors"
+    if not model_file.exists() and list(model_dir.glob("model.safetensors.part-*")):
+        import subprocess
+        print("Reassembling model from chunks (one-time after clone)...")
+        subprocess.run([__import__("sys").executable, str(script_dir / "reassemble_model.py")], check=True)
 
     print(f"Loading model from: {model_dir}")
     tokenizer, model = load_model(model_dir)
